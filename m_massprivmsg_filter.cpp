@@ -73,10 +73,9 @@ public:
 	{
 		ServiceProvider *providerlist[] = {&commandBotSpam};
 		ServerInstance->Modules->AddServices(providerlist, sizeof(providerlist) / sizeof(ServiceProvider *));
-		Implementation eventlist[] = {I_OnUserMessage, I_OnBackgroundTimer};
+		Implementation eventlist[] = {I_OnUserMessage, I_OnBackgroundTimer, I_OnRehash};
 		ServerInstance->Modules->Attach(eventlist, this, sizeof(eventlist) / sizeof(Implementation));
 		OnRehash(NULL);
-		ServerInstance->SNO->EnableSnomask('F', "BOTSPAM");
 	}
 
 	void OnRehash(User *user)
@@ -107,7 +106,7 @@ public:
 			std::stringstream sstr;
 			sstr << "Mass PM flood triggered by: " << user->nick << "@" << user->host << " (limit was " << repeats
 				 << " in " << watchtime << " seconds)";
-			ServerInstance->SNO->WriteGlobalSno('a', sstr.str());
+			ServerInstance->SNO->WriteGlobalSno('f', sstr.str());
 		}
 	}
 
@@ -119,10 +118,10 @@ public:
 			if (curtime > (it->second.second +
 						   this->watchtime))  // We should remove message hashes that have been stored for longer than watchtime
 			{
-				ServerInstance->SNO->WriteGlobalSno('a', "BotSpam: Removing hash from msgmap");
+				ServerInstance->SNO->WriteGlobalSno('f', "BotSpam: Removing hash from msgmap");
 				std::map<std::string, std::pair<int, time_t> >::iterator toErase = it; // To avoid iterator invalidation
 				it++;
-				msgmap.erase(it);
+				msgmap.erase(toErase);
 			}
 			else
 				it++;
